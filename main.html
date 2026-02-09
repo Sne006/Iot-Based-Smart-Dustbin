@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart ESP32 Sensor Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -250px;
+            right: -250px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            bottom: -200px;
+            left: -200px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-content {
+            text-align: center;
+            color: white;
+            z-index: 2;
+            padding: 40px 20px;
+            max-width: 900px;
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero p {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            font-weight: 300;
+            animation: fadeInUp 1s ease 0.2s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-illustration {
+            width: 300px;
+            height: 300px;
+            margin: 30px auto;
+            animation: fadeInUp 1s ease 0.4s backwards;
+        }
+
+        /* Simple SVG illustration inline */
+        .illustration-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 18px 50px;
+            background: white;
+            color: #667eea;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease 0.6s backwards;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 20px;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 1em;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        footer p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2em;
+            }
+
+            .hero p {
+                font-size: 1.1em;
+            }
+
+            .hero-illustration {
+                width: 220px;
+                height: 220px;
+            }
+
+            .section-title {
+                font-size: 2em;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Smart ESP32 Sensor Dashboard</h1>
+            <p>Monitor your IoT sensors in real-time with beautiful, responsive visualizations powered by ThingSpeak API</p>
+            
+            <!-- Simple SVG Illustration -->
+            <div class="hero-illustration">
+                <svg class="illustration-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Circuit board background -->
+                    <rect x="20" y="40" width="160" height="120" rx="10" fill="rgba(255,255,255,0.2)"/>
+                    
+                    <!-- ESP32 chip -->
+                    <rect x="70" y="70" width="60" height="40" rx="5" fill="rgba(255,255,255,0.9)"/>
+                    <text x="100" y="95" font-family="Arial" font-size="10" fill="#667eea" text-anchor="middle">ESP32</text>
+                    
+                    <!-- Sensor -->
+                    <circle cx="50" cy="90" r="15" fill="rgba(255,255,255,0.8)"/>
+                    <circle cx="50" cy="90" r="8" fill="#764ba2"/>
+                    
+                    <!-- Antenna waves -->
+                    <path d="M 150 50 Q 160 40 170 50" stroke="rgba(255,255,255,0.6)" stroke-width="2" fill="none"/>
+                    <path d="M 150 60 Q 165 50 180 60" stroke="rgba(255,255,255,0.5)" stroke-width="2" fill="none"/>
+                    <path d="M 150 70 Q 170 60 190 70" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none"/>
+                    
+                    <!-- Connection lines -->
+                    <line x1="65" y1="90" x2="70" y2="90" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+                    <line x1="130" y1="90" x2="145" y2="90" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+                    
+                    <!-- Data points -->
+                    <circle cx="100" cy="130" r="3" fill="rgba(255,255,255,0.9)">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="110" cy="135" r="3" fill="rgba(255,255,255,0.9)">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="90" cy="135" r="3" fill="rgba(255,255,255,0.9)">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+            </div>
+
+            <a href="dashboard.html" class="btn-primary">Get Started →</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Powerful Features</h2>
+            <p class="section-subtitle">Everything you need for IoT sensor monitoring</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📡</div>
+                    <h3>Live ESP32 Monitoring</h3>
+                    <p>Real-time data updates from your ESP32 sensors with automatic refresh every 5 seconds</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Real-time Graphs</h3>
+                    <p>Beautiful interactive charts showing historical data trends and patterns</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>ThingSpeak API</h3>
+                    <p>Seamlessly integrated with ThingSpeak cloud platform for reliable data storage</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Fast & Lightweight</h3>
+                    <p>Optimized frontend with minimal dependencies for blazing fast performance</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Fully Responsive</h3>
+                    <p>Works perfectly on desktop, tablet, and mobile devices with adaptive layout</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Modern UI Design</h3>
+                    <p>Clean and intuitive interface with smooth animations and beautiful gradients</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>Made with ❤️ using ESP32 + ThingSpeak</p>
+    </footer>
+</body>
+</html>

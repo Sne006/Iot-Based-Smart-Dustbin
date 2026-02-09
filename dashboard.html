@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Dustbin IoT Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #b0b0c0;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .config-section {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .config-section h3 {
+            margin-bottom: 15px;
+            color: #a0a0d0;
+        }
+
+        .config-inputs {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+        }
+
+        .config-inputs input {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1em;
+        }
+
+        .config-inputs input::placeholder {
+            color: #808090;
+        }
+
+        .config-inputs button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .config-inputs button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-bar {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .loader.active {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-title {
+            font-size: 0.9em;
+            color: #b0b0c0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-unit {
+            font-size: 0.9em;
+            color: #b0b0c0;
+        }
+
+        .card.distance .card-value {
+            color: #f59e0b;
+        }
+
+        .card.moisture .card-value {
+            color: #3b82f6;
+        }
+
+        .card.bin-type .card-value {
+            transition: color 0.5s;
+        }
+
+        .card.bin-type.dry .card-value {
+            color: #10b981;
+        }
+
+        .card.bin-type.wet .card-value {
+            color: #3b82f6;
+        }
+
+        .graphs-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+
+        .graph-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .graph-card h3 {
+            margin-bottom: 20px;
+            color: #b0b0c0;
+            font-size: 1.1em;
+        }
+
+        .graph-canvas {
+            position: relative;
+            height: 250px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+
+            .graphs-container {
+                grid-template-columns: 1fr;
+            }
+
+            .config-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗑️ Smart Dustbin Dashboard</h1>
+            <p>Real-Time IoT Monitoring System</p>
+            <a href="index.html" class="back-btn">← Back to Home</a>
+        </header>
+
+        <div class="config-section">
+            <h3>⚙️ ThingSpeak Configuration</h3>
+            <div class="config-inputs">
+                <input type="text" id="channelId" placeholder="Enter Channel ID">
+                <input type="text" id="readApiKey" placeholder="Read API Key (or leave empty if public)">
+                <button onclick="saveConfig()">Connect</button>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="loader" id="loader"></div>
+            <span id="statusText">⚠️ Please configure ThingSpeak credentials above</span>
+        </div>
+
+        <div class="cards-container">
+            <div class="card distance">
+                <div class="card-title">Distance</div>
+                <div class="card-value" id="distanceValue">--</div>
+                <div class="card-unit">centimeters</div>
+            </div>
+
+            <div class="card moisture">
+                <div class="card-title">Moisture Level</div>
+                <div class="card-value" id="moistureValue">--</div>
+                <div class="card-unit">analog reading</div>
+            </div>
+
+            <div class="card bin-type" id="binTypeCard">
+                <div class="card-title">Waste Type</div>
+                <div class="card-value" id="binTypeValue">--</div>
+                <div class="card-unit">bin status</div>
+            </div>
+        </div>
+
+        <div class="graphs-container">
+            <div class="graph-card">
+                <h3>📊 Distance History</h3>
+                <div class="graph-canvas">
+                    <canvas id="distanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="graph-card">
+                <h3>💧 Moisture History</h3>
+                <div class="graph-canvas">
+                    <canvas id="moistureChart"></canvas>
+                </div>
+            </div>
+
+            <div class="graph-card">
+                <h3>🗑️ Bin Type History</h3>
+                <div class="graph-canvas">
+                    <canvas id="binTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // THINGSPEAK CONFIGURATION VARIABLES
+        // ========================================
+        let channelId = '3186516';
+        let readApiKey = 'FZKOFPLEUDH3VEII';
+        let updateInterval = null;
+        let distanceChart, moistureChart, binTypeChart;
+
+        // ========================================
+        // SAVE CONFIGURATION AND START FETCHING
+        // ========================================
+        function saveConfig() {
+            const channelInput = document.getElementById('channelId').value.trim();
+            const apiKeyInput = document.getElementById('readApiKey').value.trim();
+
+            if (!channelInput) {
+                alert('Please enter a Channel ID');
+                return;
+            }
+
+            channelId = channelInput;
+            readApiKey = apiKeyInput;
+
+            document.getElementById('statusText').textContent = '✅ Connected! Fetching data...';
+
+            // Clear existing interval if any
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+
+            // Fetch data immediately
+            fetchLatestData();
+            fetchHistoricalData();
+
+            // Set up auto-refresh every 5 seconds
+            updateInterval = setInterval(() => {
+                fetchLatestData();
+                fetchHistoricalData();
+            }, 5000);
+        }
+
+        // ========================================
+        // FETCH LATEST DATA (FOR CARDS)
+        // ========================================
+        async function fetchLatestData() {
+            if (!channelId) return;
+
+            const loader = document.getElementById('loader');
+            loader.classList.add('active');
+
+            try {
+                // Build API URL for latest reading
+                const apiUrl = readApiKey 
+                    ? `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${readApiKey}&results=1`
+                    : `https://api.thingspeak.com/channels/${channelId}/feeds.json?results=1`;
+
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.feeds && data.feeds.length > 0) {
+                    const feed = data.feeds[0];
+
+                    // Update Distance (field1)
+                    const distance = parseFloat(feed.field1) || 0;
+                    document.getElementById('distanceValue').textContent = distance.toFixed(1);
+
+                    // Update Moisture (field2)
+                    const moisture = parseFloat(feed.field2) || 0;
+                    document.getElementById('moistureValue').textContent = moisture.toFixed(0);
+
+                    // Update Bin Type (field3: 0=dry, 1=wet)
+                    const binType = parseInt(feed.field3) || 0;
+                    document.getElementById('binTypeValue').textContent = binType === 0 ? 'DRY' : 'WET';
+
+                    const binTypeCard = document.getElementById('binTypeCard');
+                    binTypeCard.classList.remove('dry', 'wet');
+                    binTypeCard.classList.add(binType === 0 ? 'dry' : 'wet');
+
+                    // Update status with timestamp
+                    const timestamp = new Date(feed.created_at).toLocaleString();
+                    document.getElementById('statusText').textContent = `✅ Last update: ${timestamp}`;
+                } else {
+                    document.getElementById('statusText').textContent = '⚠️ No data available';
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('statusText').textContent = '❌ Error fetching data';
+            } finally {
+                loader.classList.remove('active');
+            }
+        }
+
+        // ========================================
+        // FETCH HISTORICAL DATA (FOR CHARTS)
+        // ========================================
+        async function fetchHistoricalData() {
+            if (!channelId) return;
+
+            try {
+                // Build API URL for last 50 readings
+                const apiUrl = readApiKey 
+                    ? `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${readApiKey}&results=50`
+                    : `https://api.thingspeak.com/channels/${channelId}/feeds.json?results=50`;
+
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.feeds && data.feeds.length > 0) {
+                    // Extract timestamps for X-axis
+                    const labels = data.feeds.map(feed => {
+                        const date = new Date(feed.created_at);
+                        return date.toLocaleTimeString();
+                    });
+
+                    // Extract sensor data
+                    const distanceData = data.feeds.map(feed => parseFloat(feed.field1) || 0);
+                    const moistureData = data.feeds.map(feed => parseFloat(feed.field2) || 0);
+                    const binTypeData = data.feeds.map(feed => parseInt(feed.field3) || 0);
+
+                    // Update or create charts
+                    createCharts(labels, distanceData, moistureData, binTypeData);
+                }
+            } catch (error) {
+                console.error('Error fetching historical data:', error);
+            }
+        }
+
+        // ========================================
+        // CREATE/UPDATE CHARTS
+        // ========================================
+        function createCharts(labels, distanceData, moistureData, binTypeData) {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#b0b0c0',
+                            maxTicksLimit: 8
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#b0b0c0'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            };
+
+            // Distance Chart
+            if (distanceChart) distanceChart.destroy();
+            distanceChart = new Chart(document.getElementById('distanceChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Distance (cm)',
+                        data: distanceData,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // Moisture Chart
+            if (moistureChart) moistureChart.destroy();
+            moistureChart = new Chart(document.getElementById('moistureChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Moisture',
+                        data: moistureData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // Bin Type Chart
+            if (binTypeChart) binTypeChart.destroy();
+            binTypeChart = new Chart(document.getElementById('binTypeChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Bin Type',
+                        data: binTypeData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        tension: 0.4,
+                        fill: true,
+                        stepped: true
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            ...chartOptions.scales.y,
+                            ticks: {
+                                color: '#b0b0c0',
+                                stepSize: 1,
+                                callback: function(value) {
+                                    return value === 0 ? 'DRY' : value === 1 ? 'WET' : '';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
